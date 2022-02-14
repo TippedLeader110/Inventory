@@ -70,8 +70,8 @@ public class StockListAdapter extends RecyclerView.Adapter<StockListAdapter.Stoc
         String satuan = stockBarangs.get(position).getSatuan();
         float totalStock = stock*nilai_satuan;
         String kiri = "Stock = " + fmt(stock) + "("+ fmt(totalStock) +" "+ satuan +")";
-        String kanan = "Harga = " + money.format(harga) + "/" + fmt(nilai_satuan) + " " + satuan;
-        holder.setData(stockBarangs.get(posisi).getNama_barang() + "(" + stockBarangs.get(posisi).getKode_barang() + ")", kiri, kanan);
+        String kanan = money.format(harga) + "/" + fmt(nilai_satuan) + " " + satuan;
+        holder.setData(stockBarangs.get(posisi).getNama_barang() + " (" + stockBarangs.get(posisi).getKode_barang() + ")", kiri, kanan);
 
         holder.ll.setOnClickListener(new View.OnClickListener() {
             @Override

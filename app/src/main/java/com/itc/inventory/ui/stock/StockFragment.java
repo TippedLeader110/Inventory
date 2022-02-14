@@ -10,10 +10,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
-import android.widget.SearchView;
+
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -37,10 +38,16 @@ public class StockFragment extends Fragment{
     ProgressDialog pd;
     DatabaseHandler databaseHandler;
 
+    public StockFragment() {
+        setHasOptionsMenu(true);
+    }
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentStockBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
+        setHasOptionsMenu(true);
 
         databaseHandler = new DatabaseHandler(getActivity());
 
@@ -76,6 +83,7 @@ public class StockFragment extends Fragment{
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        menu.clear();
         inflater.inflate(R.menu.search_view, menu);
 
         final MenuItem searchItem = menu.findItem(R.id.action_search);
@@ -92,7 +100,6 @@ public class StockFragment extends Fragment{
                 return false;
             }
         });
-
         super.onCreateOptionsMenu(menu, inflater);
     }
 
