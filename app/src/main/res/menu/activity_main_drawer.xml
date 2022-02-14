@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_stock"
+            android:icon="@drawable/ic_baseline_account_balance_24"
+            android:title="Stock Barang" />
+        <item
+            android:id="@+id/nav_keluar"
+            android:icon="@drawable/ic_baseline_north_24"
+            android:title="Barang keluar" />
+        <item
+            android:id="@+id/nav_masuk"
+            android:icon="@drawable/ic_baseline_south_24"
+            android:title="Barang Masuk" />
+
+        <item
+            android:id="@+id/nav_laporan"
+            android:icon="@drawable/ic_baseline_text_snippet_24"
+            android:title="Laporan" />
+    </group>
+</menu>

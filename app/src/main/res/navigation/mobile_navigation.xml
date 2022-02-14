@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_stock">
+
+    <fragment
+        android:id="@+id/nav_stock"
+        android:name="com.itc.inventory.ui.stock.StockFragment"
+        android:label="Stock"
+        tools:layout="@layout/fragment_stock" />
+
+    <fragment
+        android:id="@+id/nav_keluar"
+        android:name="com.itc.inventory.ui.keluar.KeluarFragment"
+        android:label="Stock Keluar"
+        tools:layout="@layout/fragment_keluar" />
+
+    <fragment
+        android:id="@+id/nav_masuk"
+        android:name="com.itc.inventory.ui.masuk.MasukFragment"
+        android:label="Stock Masuk"
+        tools:layout="@layout/fragment_masuk" />
+
+    <fragment
+        android:id="@+id/nav_laporan"
+        android:name="com.itc.inventory.ui.laporan.LaporanFragment"
+        android:label="Laporan Stock"
+        tools:layout="@layout/fragment_laporan" />
+</navigation>
