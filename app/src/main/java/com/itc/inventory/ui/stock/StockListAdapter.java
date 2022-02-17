@@ -2,6 +2,7 @@ package com.itc.inventory.ui.stock;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +14,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.itc.inventory.DatabaseHandler;
 import com.itc.inventory.R;
+import com.itc.inventory.ui.laporan.TransaksiBarang;
 
 
 import java.text.NumberFormat;
@@ -28,7 +31,7 @@ public class StockListAdapter extends RecyclerView.Adapter<StockListAdapter.Stoc
     Context context;
     Locale myIndonesianLocale;
     NumberFormat money;
-
+    DatabaseHandler databaseHandler;
 
     public StockListAdapter(Context context) {
         this.context = context;
@@ -36,6 +39,7 @@ public class StockListAdapter extends RecyclerView.Adapter<StockListAdapter.Stoc
         stockBarangsTemp = new ArrayList<>();
         myIndonesianLocale = new Locale("in", "ID");
         money = NumberFormat.getCurrencyInstance(myIndonesianLocale);
+        databaseHandler = new DatabaseHandler(context);
     }
 
     public void setData(ArrayList<StockBarang> data){
@@ -60,6 +64,29 @@ public class StockListAdapter extends RecyclerView.Adapter<StockListAdapter.Stoc
         return new StockViewHolder(view);
     }
 
+    public float hitungStock(Float stock, ArrayList<TransaksiBarang> masuk, ArrayList<TransaksiBarang> keluar){
+        double sstock = stock;
+        double total_masuk = 0.0;
+        double total_keluar = 0.0;
+        if(masuk.size()>0){
+            for (TransaksiBarang ms : masuk){
+                total_masuk = total_masuk + ms.getJumlah();
+            }
+        }
+
+        if (keluar.size()>0){
+            for(TransaksiBarang ks : keluar){
+                total_keluar = total_keluar + ks.getJumlah();
+            }
+        }
+        Log.w("Stock", sstock + " => -" + total_keluar + " & +" + total_masuk);
+        sstock = sstock-total_keluar;
+        Log.w("Stock keluar", String.valueOf(sstock));
+        sstock = sstock+total_masuk;
+        Log.w("Stock masuk", String.valueOf(sstock));
+        return (float) sstock;
+    }
+
     @Override
     public void onBindViewHolder(@NonNull StockViewHolder holder, int position) {
         int posisi = position;
@@ -68,7 +95,10 @@ public class StockListAdapter extends RecyclerView.Adapter<StockListAdapter.Stoc
         float nilai_satuan = stockBarangs.get(position).getNilai_satuan();
         float harga = stockBarangs.get(position).getHarga();
         String satuan = stockBarangs.get(position).getSatuan();
+        String kode = stockBarangs.get(posisi).getKode_barang();
+        stock = hitungStock(stock, databaseHandler.getRecordTransaksi(kode, 1), databaseHandler.getRecordTransaksi(kode, 2));
         float totalStock = stock*nilai_satuan;
+
         String kiri = "Stock = " + fmt(stock) + "("+ fmt(totalStock) +" "+ satuan +")";
         String kanan = money.format(harga) + "/" + fmt(nilai_satuan) + " " + satuan;
         holder.setData(stockBarangs.get(posisi).getNama_barang() + " (" + stockBarangs.get(posisi).getKode_barang() + ")", kiri, kanan);

@@ -11,27 +11,11 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.itc.inventory.databinding.FragmentKeluarBinding;
+import com.itc.inventory.ui.masuk.MasukFragment;
 
-public class KeluarFragment extends Fragment {
+public class KeluarFragment extends MasukFragment {
 
-    private FragmentKeluarBinding binding;
-
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        KeluarViewModel keluarViewModel =
-                new ViewModelProvider(this).get(KeluarViewModel.class);
-
-        binding = FragmentKeluarBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
-
-        final TextView textView = binding.textGallery;
-        keluarViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
-        return root;
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
+    public KeluarFragment() {
+        setTipe(2);
     }
 }

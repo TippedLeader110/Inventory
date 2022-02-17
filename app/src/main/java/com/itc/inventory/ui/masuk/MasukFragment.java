@@ -1,5 +1,6 @@
 package com.itc.inventory.ui.masuk;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -20,7 +21,13 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -32,7 +39,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.itc.inventory.DatabaseHandler;
 import com.itc.inventory.R;
-import com.itc.inventory.databinding.FragmentMasukBinding;import java.util.ArrayList;
+import com.itc.inventory.databinding.FragmentMasukBinding;
+import com.itc.inventory.ui.laporan.AddTransaksi;
+
+import java.util.ArrayList;
 import java.util.Calendar;
 
 public class MasukFragment extends Fragment{
@@ -142,7 +152,9 @@ public class MasukFragment extends Fragment{
         addfab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Intent intent = new Intent(getActivity(), masukad.class);
+                Intent intent = new Intent(getActivity(), AddTransaksi.class);
+                intent.putExtra("tipe", String.valueOf(tipe));
+                activityResultLauncher.launch(intent);
 //                startActivity(intent);
             }
         });
@@ -188,6 +200,18 @@ public class MasukFragment extends Fragment{
         });
         super.onCreateOptionsMenu(menu, inflater);
     }
+
+    ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if(result.getResultCode() == Activity.RESULT_OK){
+                        fetchData();
+                    }
+                }
+            }
+    );
 
     @Override
     public void onDestroyView() {

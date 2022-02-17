@@ -85,6 +85,26 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         }
     }
 
+    public String addTransaksi(TransaksiBarang transaksiBarang) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("kode_barang", transaksiBarang.getKode_barang());
+        contentValues.put("nama", transaksiBarang.getNama());
+        contentValues.put("tgl_transaksi", transaksiBarang.getTgl_transaksi());
+        contentValues.put("jumlah", transaksiBarang.getJumlah());
+        contentValues.put("tipe_transaksi", transaksiBarang.getTipe_transaksi());
+        contentValues.put("catatan", transaksiBarang.getCatatan());
+
+        db = this.getWritableDatabase();
+
+        Long ret = db.insert(TABLE_TRANSAKSI, null, contentValues);
+
+        if (ret!=-1){
+            return "Data berhasil disimpan";
+        }else{
+            return "Terjadi kesalahan saat menyimpan data";
+        }
+    };
+
     public String addStockData(StockBarang stockBarang) {
         ContentValues contentValues = new ContentValues();
         contentValues.put("kode_barang", stockBarang.getKode_barang());
@@ -156,14 +176,17 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     }
 
+    @SuppressLint("Range")
     public ArrayList<TransaksiBarang> getTransaksibyDate(int tipe, String sstart, String ends) {
 
         ArrayList<TransaksiBarang> transaksi = new ArrayList<>();
         db = this.getReadableDatabase();
+        Log.w("Query date", "select * from "+TABLE_TRANSAKSI+ " where tipe_transaksi = " + tipe + " " +
+                "AND tgl_transaksi BETWEEN '"+ sstart +"' AND '"+ ends + "'");
 
 //        Cursor mCursor = db.rawQuery("SELECT * FROM " + TABLE_TRANSAKSI + " where tipe_transaksi = " + tipe , null);
         Cursor mCursor = db.rawQuery( "select * from "+TABLE_TRANSAKSI+ " where tipe_transaksi = " + tipe + " " +
-                "AND date BETWEEN '"+ sstart +"' AND '"+ ends + "'", null );
+                "AND tgl_transaksi BETWEEN '"+ sstart +"' AND '"+ ends + "'", null );
         int i = 0 ;
         while (mCursor.moveToNext()){
             TransaksiBarang newTransaksi = new TransaksiBarang();
@@ -181,6 +204,41 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         return transaksi;
 
+    }
+
+    @SuppressLint("Range")
+    public String getStockNama(String kode_barang) {
+        db = this.getReadableDatabase();
+        Cursor mCursor = db.rawQuery("SELECT * FROM " + TABLE_STOCK + " where kode_barang = '" + kode_barang + "'", null);
+        String item = "";
+        if (mCursor.moveToFirst())
+        {
+            Log.w("checkRow","Ada row");
+            item = mCursor.getString(mCursor.getColumnIndex("nama_barang"));
+            mCursor.close();
+        }
+        return item;
+    }
+
+    @SuppressLint("Range")
+    public ArrayList<TransaksiBarang> getRecordTransaksi(String kode, int i) {
+        ArrayList<TransaksiBarang> transaksiBarangs = new ArrayList<>();
+        db = this.getReadableDatabase();
+        Cursor mCursor = db.rawQuery("SELECT * FROM " + TABLE_TRANSAKSI + " where kode_barang = '" + kode + "' AND tipe_transaksi = " + i, null);
+        String item = "";
+        if (mCursor.moveToFirst())
+        {
+            TransaksiBarang transaksiBarang = new TransaksiBarang();
+            Log.w("checkRow","Ada row");
+            transaksiBarang.setJumlah(Float.valueOf(mCursor.getString(mCursor.getColumnIndex("jumlah"))));
+            transaksiBarang.setTipe_transaksi(i);
+            transaksiBarang.setTgl_transaksi(mCursor.getString(mCursor.getColumnIndex("tgl_transaksi")));
+            transaksiBarang.setKode_barang(mCursor.getString(mCursor.getColumnIndex("kode_barang")));
+            transaksiBarangs.add(transaksiBarang);
+        }
+
+        mCursor.close();
+        return transaksiBarangs;
     }
 }
 

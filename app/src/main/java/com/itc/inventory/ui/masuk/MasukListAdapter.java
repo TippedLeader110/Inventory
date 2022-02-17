@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.itc.inventory.DatabaseHandler;
 import com.itc.inventory.R;
 import com.itc.inventory.ui.laporan.TransaksiBarang;
 
@@ -27,6 +28,7 @@ public class MasukListAdapter extends RecyclerView.Adapter<MasukListAdapter.Masu
     ArrayList<TransaksiBarang> transkasiTemp;
     Context context;
     Locale myIndonesianLocale;
+    DatabaseHandler databaseHandler;
     NumberFormat money;
 
 
@@ -35,10 +37,13 @@ public class MasukListAdapter extends RecyclerView.Adapter<MasukListAdapter.Masu
         transaksiBarangs = new ArrayList<>();
         transkasiTemp = new ArrayList<>();
         myIndonesianLocale = new Locale("in", "ID");
+        databaseHandler = new DatabaseHandler(context);
         money = NumberFormat.getCurrencyInstance(myIndonesianLocale);
     }
 
     public void setData(ArrayList<TransaksiBarang> data){
+        transaksiBarangs.clear();
+        transkasiTemp.clear();
         transaksiBarangs.addAll(data);
         transkasiTemp.addAll(data);
         notifyDataSetChanged();
@@ -64,9 +69,11 @@ public class MasukListAdapter extends RecyclerView.Adapter<MasukListAdapter.Masu
     public void onBindViewHolder(@NonNull MasukViewHolder holder, int position) {
         int posisi = position;
 
+        String nama_item = databaseHandler.getStockNama(transaksiBarangs.get(posisi).getKode_barang());
+
         String kiri = "Tanggal : " + transaksiBarangs.get(posisi).getTgl_transaksi();
         String kanan = "Jumlah : " + fmt(transaksiBarangs.get(posisi).getJumlah());
-        holder.setData(transaksiBarangs.get(posisi).getNama_transaksi() + " (" + transaksiBarangs.get(posisi).getNama() + ")", kiri, kanan);
+        holder.setData(nama_item + " (" + transaksiBarangs.get(posisi).getNama() + ")", kiri, kanan);
 
         holder.ll.setOnClickListener(new View.OnClickListener() {
             @Override

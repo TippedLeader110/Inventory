@@ -9,6 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Inventory">
+        <activity android:name=".ui.laporan.AddTransaksi"></activity>
         <activity android:name=".ui.stock.StockDetail"></activity>
         <activity
             android:name=".ui.stock.StockAdd"

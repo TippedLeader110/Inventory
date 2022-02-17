@@ -1,12 +1,14 @@
 
 package com.itc.inventory.ui.stock;
 
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.hardware.input.InputManager;
 import android.os.Bundle;
 import android.view.View;
@@ -77,6 +79,10 @@ public class StockAdd extends AppCompatActivity {
                 String msg = databaseHandler.addStockData(stockBarang);
                 progressDialog.dismiss();
                 Snackbar.make(findViewById(android.R.id.content), msg, Snackbar.LENGTH_LONG).show();
+                Intent intent = new Intent();
+                intent.putExtra("refresh", "true");
+                setResult(RESULT_OK, intent);
+                finish();
             }
         });
         builder.setNegativeButton("Tidak", new DialogInterface.OnClickListener() {
@@ -87,4 +93,5 @@ public class StockAdd extends AppCompatActivity {
         AlertDialog alert = builder.create();
         alert.show();
     }
+
 }
