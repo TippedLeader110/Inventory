@@ -1,6 +1,7 @@
 package com.itc.inventory.ui.masuk;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,8 +43,8 @@ public class MasukListAdapter extends RecyclerView.Adapter<MasukListAdapter.Masu
     }
 
     public void setData(ArrayList<TransaksiBarang> data){
-        transaksiBarangs.clear();
-        transkasiTemp.clear();
+        transaksiBarangs = new ArrayList<>();
+        transkasiTemp = new ArrayList<>();
         transaksiBarangs.addAll(data);
         transkasiTemp.addAll(data);
         notifyDataSetChanged();
@@ -70,7 +71,7 @@ public class MasukListAdapter extends RecyclerView.Adapter<MasukListAdapter.Masu
         int posisi = position;
 
         String nama_item = databaseHandler.getStockNama(transaksiBarangs.get(posisi).getKode_barang());
-
+        transaksiBarangs.get(posisi).setNama_transaksi(nama_item);
         String kiri = "Tanggal : " + transaksiBarangs.get(posisi).getTgl_transaksi();
         String kanan = "Jumlah : " + fmt(transaksiBarangs.get(posisi).getJumlah());
         holder.setData(nama_item + " (" + transaksiBarangs.get(posisi).getNama() + ")", kiri, kanan);
@@ -122,13 +123,14 @@ public class MasukListAdapter extends RecyclerView.Adapter<MasukListAdapter.Masu
             ArrayList<TransaksiBarang> result = new ArrayList<>();
 
             if(charSequence.toString().isEmpty()){
+                Log.w("Transaksi Empty", String.valueOf(transkasiTemp.size()));
                 result.addAll(transkasiTemp);
             }else{
                 for (TransaksiBarang br : transaksiBarangs) {
-                    if (br.getNama_transaksi().toLowerCase().contains(charSequence.toString().toLowerCase())) {
+                    if (br.getNama().toLowerCase().contains(charSequence.toString().toLowerCase())) {
                         result.add(br);
                     } else {
-                        if (br.getKode_barang().contains(charSequence.toString())) {
+                        if (br.getNama_transaksi().contains(charSequence.toString())) {
                             result.add(br);
                         } else {
                             if (br.getNama().toLowerCase().contains(charSequence.toString().toLowerCase())) {
