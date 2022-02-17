@@ -155,4 +155,34 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return transaksi;
 
     }
+
+    public ArrayList<TransaksiBarang> getTransaksibyDate(int tipe, String sstart, String ends) {
+
+        ArrayList<TransaksiBarang> transaksi = new ArrayList<>();
+        db = this.getReadableDatabase();
+
+//        Cursor mCursor = db.rawQuery("SELECT * FROM " + TABLE_TRANSAKSI + " where tipe_transaksi = " + tipe , null);
+        Cursor mCursor = db.rawQuery( "select * from "+TABLE_TRANSAKSI+ " where tipe_transaksi = " + tipe + " " +
+                "AND date BETWEEN '"+ sstart +"' AND '"+ ends + "'", null );
+        int i = 0 ;
+        while (mCursor.moveToNext()){
+            TransaksiBarang newTransaksi = new TransaksiBarang();
+            newTransaksi.setTgl_transaksi(mCursor.getString(mCursor.getColumnIndex("tgl_transaksi")));
+            newTransaksi.setNama_transaksi(mCursor.getString(mCursor.getColumnIndex("nama_transaksi")));
+            newTransaksi.setTipe_transaksi(tipe);
+            newTransaksi.setCatatan(mCursor.getString(mCursor.getColumnIndex("catatan")));
+            newTransaksi.setKode_barang(mCursor.getString(mCursor.getColumnIndex("kode_barang")));
+            newTransaksi.setJumlah(mCursor.getFloat(mCursor.getColumnIndex("jumlah")));
+            newTransaksi.setNama(mCursor.getString(mCursor.getColumnIndex("nama")));
+
+            transaksi.add(newTransaksi);
+        }
+        mCursor.close();
+
+        return transaksi;
+
+    }
 }
+
+
+

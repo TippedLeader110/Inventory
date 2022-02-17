@@ -74,10 +74,68 @@ public class MasukFragment extends Fragment{
         MasukListAdapter.notifyDataSetChanged();
         recyclerView.setAdapter(MasukListAdapter);
 
+        dateListener();
+
         datefab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Calendar cal = Calendar.getInstance();
+                int year = cal.get(Calendar.YEAR);
+                int month = cal.get(Calendar.MONTH);
+                int day = cal.get(Calendar.DAY_OF_MONTH);
 
+                DatePickerDialog dialog =  new DatePickerDialog(
+                        getActivity(),
+                        android.R.style.Theme_Holo_Light_Dialog_MinWidth,
+                        new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker datePicker, int year , int month , int day) {
+                                Toast.makeText(getActivity(), "Masukan tanggal mulai", Toast.LENGTH_SHORT).show();
+                                month = month + 1;
+                                String dayD = String.valueOf(day);
+                                if (day<10) {
+                                    dayD = "0"+dayD;
+                                }
+                                String monthD = String.valueOf(month);
+                                if (month<10) {
+                                    monthD= "0"+monthD;
+                                }
+                                Log.d( "onDateSet" , month + "/" + day + "/" + year );
+                                sstart =  year+"-"+monthD+"-"+dayD;
+
+                                DatePickerDialog dialog2 =  new DatePickerDialog(
+                                        getActivity(),
+                                        android.R.style.Theme_Holo_Light_Dialog_MinWidth,
+                                        new DatePickerDialog.OnDateSetListener() {
+                                            @Override
+                                            public void onDateSet(DatePicker datePicker, int year , int month , int day) {
+                                                Toast.makeText(getActivity(), "Masukan tanggal akhir", Toast.LENGTH_SHORT).show();
+                                                month = month + 1;
+                                                String dayD = String.valueOf(day);
+                                                if (day<10) {
+                                                    dayD = "0"+dayD;
+                                                }
+                                                String monthD = String.valueOf(month);
+                                                if (month<10) {
+                                                    monthD= "0"+monthD;
+                                                }
+                                                Log.d( "onDateSet" , month + "/" + day + "/" + year );
+                                                ends =  year+"-"+monthD+"-"+dayD;
+
+                                                startFilter(sstart, ends);
+                                            }
+                                        },
+                                        year, month, day
+                                );
+                                dialog2.getWindow().setBackgroundDrawable( new ColorDrawable( Color.TRANSPARENT ) );
+                                dialog2.show();
+                            }
+                        },
+                        year, month, day
+                );
+                dialog.getWindow().setBackgroundDrawable( new ColorDrawable( Color.TRANSPARENT ) );
+
+                dialog.show();
             }
         });
 
@@ -96,6 +154,12 @@ public class MasukFragment extends Fragment{
         pd.show();
         fetchData();
         return root;
+    }
+
+    private void startFilter(String sstart, String ends) {
+        pd.show();
+        MasukListAdapter.setData(databaseHandler.getTransaksibyDate(tipe, sstart, ends));
+        pd.dismiss();
     }
 
     public void fetchData(){
@@ -133,10 +197,11 @@ public class MasukFragment extends Fragment{
 
     public void dateListener(){
 
-        Snackbar.make(binding.getRoot(), "Masukan tanggal mulai", Snackbar.LENGTH_LONG).show();
+//        Snackbar.make(getActivity().getCurrentFocus(), "Masukan tanggal mulai", Snackbar.LENGTH_LONG).show();
         start = new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int year , int month , int day) {
+                Toast.makeText(getActivity(), "Masukan tanggal mulai", Toast.LENGTH_SHORT).show();
                 month = month + 1;
                 String dayD = String.valueOf(day);
                 if (day<10) {
@@ -154,6 +219,7 @@ public class MasukFragment extends Fragment{
         start = new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int year , int month , int day) {
+
                 month = month + 1;
                 String dayD = String.valueOf(day);
                 if (day<10) {
@@ -168,37 +234,6 @@ public class MasukFragment extends Fragment{
             }
         };
 
-        Calendar cal = Calendar.getInstance();
-        int year = cal.get(Calendar.YEAR);
-        int month = cal.get(Calendar.MONTH);
-        int day = cal.get(Calendar.DAY_OF_MONTH);
 
-        DatePickerDialog dialog =  new DatePickerDialog(
-                getActivity(),
-                android.R.style.Theme_Holo_Light_Dialog_MinWidth,
-                start,
-                year,month,day
-        );
-        dialog.getWindow().setBackgroundDrawable( new ColorDrawable( Color.TRANSPARENT ) );
-        dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                DatePickerDialog dialog2 =  new DatePickerDialog(
-                        getActivity(),
-                        android.R.style.Theme_Holo_Light_Dialog_MinWidth,
-                        end,
-                        year,month,day
-                );
-                dialog2.getWindow().setBackgroundDrawable( new ColorDrawable( Color.TRANSPARENT ) );
-                dialog2.show();
-                dialog2.setButton(DialogInterface.BUTTON_POSITIVE, "Terapkan filter", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        Toast.makeText(getActivity(), sstart + " - " + ends, Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        });
-        dialog.show();
     }
 }
