@@ -6,17 +6,51 @@
     android:layout_height="match_parent"
     tools:context=".ui.keluar.KeluarFragment">
 
-    <TextView
-        android:id="@+id/text_gallery"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:textAlignment="center"
-        android:textSize="20sp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <Button
+            android:id="@+id/laporan_stock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Laporan Stock"
+            app:layout_constraintBottom_toTopOf="@id/laporan_masuk"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/laporan_keluar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Laporan Keluar"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/laporan_masuk" />
+
+        <Button
+            android:id="@+id/laporan_masuk"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Laporan  Masuk"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/laporan_keluar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/laporan_stock" />
+
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

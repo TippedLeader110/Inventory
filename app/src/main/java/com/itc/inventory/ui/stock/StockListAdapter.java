@@ -11,6 +11,7 @@ import android.widget.Filterable;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -32,18 +33,22 @@ public class StockListAdapter extends RecyclerView.Adapter<StockListAdapter.Stoc
     Locale myIndonesianLocale;
     NumberFormat money;
     DatabaseHandler databaseHandler;
+    StockFragment stockFragment;
 
-    public StockListAdapter(Context context) {
+    public StockListAdapter(Context context, StockFragment stockFragment) {
         this.context = context;
         stockBarangs = new ArrayList<>();
         stockBarangsTemp = new ArrayList<>();
         myIndonesianLocale = new Locale("in", "ID");
         money = NumberFormat.getCurrencyInstance(myIndonesianLocale);
         databaseHandler = new DatabaseHandler(context);
+        this.stockFragment = stockFragment;
     }
 
     public void setData(ArrayList<StockBarang> data){
+        stockBarangs = new ArrayList<>();
         stockBarangs.addAll(data);
+        stockBarangsTemp = new ArrayList<>();
         stockBarangsTemp.addAll(data);
         notifyDataSetChanged();
     }
@@ -106,6 +111,8 @@ public class StockListAdapter extends RecyclerView.Adapter<StockListAdapter.Stoc
         holder.ll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                stockFragment.getData(kode);
 //                Intent intent = new Intent(context, StockDetail.class);
 //                intent.putExtra("kode_barang", stockBarangs.get(posisi).getKode_barang());
 //                context.startActivity(intent);
@@ -174,5 +181,9 @@ public class StockListAdapter extends RecyclerView.Adapter<StockListAdapter.Stoc
             desk_kiri.setText(kiri);
             desk_kanan.setText(kanan);
         }
+    }
+
+    interface sendBack{
+        public void getData(String ss);
     }
 }

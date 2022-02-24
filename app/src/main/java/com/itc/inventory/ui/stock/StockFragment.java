@@ -13,10 +13,10 @@ import android.view.ViewGroup;
 import android.widget.ListAdapter;
 
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultCallerLauncher;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -35,7 +35,7 @@ import com.itc.inventory.databinding.FragmentStockBinding;
 
 import java.util.ArrayList;
 
-public class StockFragment extends Fragment{
+public class StockFragment extends Fragment implements StockListAdapter.sendBack{
 
     private FragmentStockBinding binding;
     RecyclerView recyclerView;
@@ -59,7 +59,7 @@ public class StockFragment extends Fragment{
 
         recyclerView = binding.rcStock;
         floatingActionButton = binding.stockFab;
-        stockListAdapter = new StockListAdapter(getActivity());
+        stockListAdapter = new StockListAdapter(getActivity(), this);
         recyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), LinearLayoutManager.VERTICAL));
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         stockListAdapter.notifyDataSetChanged();
@@ -69,6 +69,7 @@ public class StockFragment extends Fragment{
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), StockAdd.class);
+                intent.putExtra("view", "0");
                 activityResultLauncher.launch(intent);
 //                startActivity(intent);
             }
@@ -126,5 +127,14 @@ public class StockFragment extends Fragment{
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    @Override
+    public void getData(String ss) {
+        Toast.makeText(getContext(), "Selected : " + ss, Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(getActivity(), StockAdd.class);
+        intent.putExtra("id", ss);
+        intent.putExtra("view", "1");
+        activityResultLauncher.launch(intent);
     }
 }

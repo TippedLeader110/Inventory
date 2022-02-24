@@ -31,15 +31,17 @@ public class MasukListAdapter extends RecyclerView.Adapter<MasukListAdapter.Masu
     Locale myIndonesianLocale;
     DatabaseHandler databaseHandler;
     NumberFormat money;
+    MasukFragment masukFragment;
 
 
-    public MasukListAdapter(Context context) {
+    public MasukListAdapter(Context context, MasukFragment masukFragment) {
         this.context = context;
         transaksiBarangs = new ArrayList<>();
         transkasiTemp = new ArrayList<>();
         myIndonesianLocale = new Locale("in", "ID");
         databaseHandler = new DatabaseHandler(context);
         money = NumberFormat.getCurrencyInstance(myIndonesianLocale);
+        this.masukFragment = masukFragment;
     }
 
     public void setData(ArrayList<TransaksiBarang> data){
@@ -69,8 +71,8 @@ public class MasukListAdapter extends RecyclerView.Adapter<MasukListAdapter.Masu
     @Override
     public void onBindViewHolder(@NonNull MasukViewHolder holder, int position) {
         int posisi = position;
-
         String nama_item = databaseHandler.getStockNama(transaksiBarangs.get(posisi).getKode_barang());
+        int id_transaksi = transaksiBarangs.get(posisi).getId_transaksi();
         transaksiBarangs.get(posisi).setNama_transaksi(nama_item);
         String kiri = "Tanggal : " + transaksiBarangs.get(posisi).getTgl_transaksi();
         String kanan = "Jumlah : " + fmt(transaksiBarangs.get(posisi).getJumlah());
@@ -79,6 +81,7 @@ public class MasukListAdapter extends RecyclerView.Adapter<MasukListAdapter.Masu
         holder.ll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                masukFragment.detailTransaksi(id_transaksi);
 //                Intent intent = new Intent(context, MasukDetail.class);
 //                intent.putExtra("kode_barang", MasukBarangs.get(posisi).getKode_barang());
 //                context.startActivity(intent);
@@ -152,4 +155,8 @@ public class MasukListAdapter extends RecyclerView.Adapter<MasukListAdapter.Masu
             notifyDataSetChanged();
         }
     };
+
+    public interface dataBack{
+        public void detailTransaksi(Integer id_transaksi);
+    }
 }

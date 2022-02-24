@@ -15,14 +15,26 @@
         android:clickable="true"
         android:contentDescription="Simpan"
         android:foregroundGravity="right|bottom"
+        android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0"
-        android:scaleType="fitXY"
         app:srcCompat="@drawable/ic_baseline_save_24" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/stock_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:clickable="true"
+        app:layout_constraintBottom_toTopOf="@id/stock_save"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/ic_baseline_delete_24" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -55,7 +67,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="40dp"
                     android:layout_marginBottom="20dp"
-                    android:text="Tambah Barang Baru"
+                    android:text="Filter Tanggal"
                     android:textColor="@android:color/black"
                     android:textSize="24dp"
                     app:layout_constraintBottom_toTopOf="@id/stock_kode_barang"

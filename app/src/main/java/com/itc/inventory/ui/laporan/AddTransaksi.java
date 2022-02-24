@@ -2,6 +2,7 @@ package com.itc.inventory.ui.laporan;
 
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -19,15 +20,19 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.databinding.DataBindingUtil;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 import com.itc.inventory.DatabaseHandler;
 import com.itc.inventory.R;
 import com.itc.inventory.databinding.ActivityTransaksiAddBinding;
 import com.itc.inventory.databinding.FragmentStockBinding;
+import com.itc.inventory.ui.stock.StockAdd;
 import com.itc.inventory.ui.stock.StockBarang;
 
 import java.util.ArrayList;
@@ -36,7 +41,7 @@ import java.util.Calendar;
 public class AddTransaksi extends AppCompatActivity {
 
     Integer selected_Stock;
-    FloatingActionButton save;
+    FloatingActionButton save, delete;
     AutoCompleteTextView dropdown_stock;
     ArrayList<StockBarang> stockBarangArrayList;
     ArrayList<String> dropdown_name;
@@ -45,7 +50,10 @@ public class AddTransaksi extends AppCompatActivity {
     ProgressDialog pd;
     TextView title;
     DatabaseHandler databaseHandler;
-    Integer tipe;
+    ArrayAdapter arrayAdapter;
+    Integer tipe, id_transaksi;
+    Boolean add, mode;
+    AlertDialog.Builder builder;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,7 +62,7 @@ public class AddTransaksi extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle("Tambah transaksi");
         actionBar.setDisplayHomeAsUpEnabled(true);
-
+        builder = new AlertDialog.Builder(this);
         dropdown_name = new ArrayList<>();
         dropdown_kode = new ArrayList<>();
         tipe = Integer.valueOf(getIntent().getStringExtra("tipe"));
@@ -70,8 +78,24 @@ public class AddTransaksi extends AppCompatActivity {
         nama = findViewById(R.id.transaksi_nama_user);
         tgl = findViewById(R.id.transaksi_tgl);
         catatan = findViewById(R.id.transaksi_catatan);
+        delete = findViewById(R.id.transaksi_delete);
         save = findViewById(R.id.transaksi_add_fab);
         dropdown_stock = findViewById(R.id.transaksi_auto);
+        mode = false;
+        setDropDown();
+
+        if(getIntent().getStringExtra("view").equals("1")){
+            setData(Integer.valueOf(getIntent().getStringExtra("id")));
+            setEnable(false);
+            delete.setVisibility(View.VISIBLE);
+            add = false;
+            title.setText("Informasi detail transaksi");
+            save.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_assignment_24));
+        }else{
+            delete.setVisibility(View.GONE);
+            add = true;
+            setEnable(true);
+        }
 
         if(tipe==1){
             title.setText("Tambah transaksi masuk");
@@ -118,24 +142,91 @@ public class AddTransaksi extends AppCompatActivity {
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TransaksiBarang transaksiBarang = new TransaksiBarang();
-                transaksiBarang.setTgl_transaksi(tgl.getEditText().getText().toString());
-                transaksiBarang.setTipe_transaksi(tipe);
-                transaksiBarang.setNama(nama.getEditText().getText().toString());
-                transaksiBarang.setCatatan(catatan.getEditText().getText().toString());
-                transaksiBarang.setJumlah(Float.valueOf(stock.getEditText().getText().toString()));
-                transaksiBarang.setKode_barang(dropdown_kode.get(selected_Stock));
+                if(add){
 
-                Toast.makeText(AddTransaksi.this, databaseHandler.addTransaksi(transaksiBarang), Toast.LENGTH_SHORT).show();;
+                    getinputData();
 
+                }else{
+//                    title.setText("");
+                    Toast.makeText(AddTransaksi.this, "Mode edit diaktifkan", Toast.LENGTH_SHORT).show();
+                    add = true;
+                    mode = true;
+                    setEnable(true);
+                }
+            }
+        });
+
+
+    }
+
+    private void getinputData() {
+        TransaksiBarang transaksiBarang = new TransaksiBarang();
+        transaksiBarang.setTipe_transaksi(tipe);
+        transaksiBarang.setTgl_transaksi(tgl.getEditText().getText().toString());
+        transaksiBarang.setNama(nama.getEditText().getText().toString());
+        transaksiBarang.setCatatan(catatan.getEditText().getText().toString());
+        transaksiBarang.setJumlah(Float.valueOf(stock.getEditText().getText().toString()));
+        transaksiBarang.setKode_barang(dropdown_kode.get(selected_Stock));
+
+
+        builder.setTitle(R.string.app_name);
+        builder.setMessage("Apakah data sudah benar ?");
+//        builder.setIcon(R.drawable.ic_launcher);
+        builder.setPositiveButton("Ya", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                String msg;
+                if(mode){
+                    msg = databaseHandler.editTransaksi(transaksiBarang, id_transaksi);
+                }else{
+                    msg = databaseHandler.addTransaksi(transaksiBarang);
+                }
                 Intent intent = new Intent();
                 intent.putExtra("refresh", "true");
                 setResult(RESULT_OK, intent);
                 finish();
+//                    Toast.makeText(AddTransaksi.this, databaseHandler.addTransaksi(transaksiBarang), Toast.LENGTH_SHORT).show();;
+                Snackbar.make(findViewById(android.R.id.content), msg, Snackbar.LENGTH_LONG).show();
             }
         });
+        builder.setNegativeButton("Tidak", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
 
-        setDropDown();
+    private void setData(Integer id) {
+        TransaksiBarang transaksiBarang = new TransaksiBarang();
+
+        transaksiBarang = databaseHandler.getTransaksiDetail(id);
+        tgl.getEditText().setText(transaksiBarang.getTgl_transaksi());
+        nama.getEditText().setText(transaksiBarang.getNama());
+        catatan.getEditText().setText(transaksiBarang.getCatatan());
+        stock.getEditText().setText(transaksiBarang.getJumlah().toString());
+        id_transaksi = id;
+        int i = 0;
+        for (String data : dropdown_kode){
+            if(data.equals(transaksiBarang.getKode_barang())){
+                break;
+            }
+            i++;
+        }
+        selected_Stock = i;
+        dropdown_stock.setText(dropdown_name.get(i), false);
+        dropdown_stock.setEnabled(false);
+    }
+
+    public void setEnable(Boolean d){
+//        title.setEnabled(d);
+//        daftar_stock.setEnabled(d);
+        stock.setEnabled(d);
+        nama.setEnabled(d);
+        tgl.setEnabled(d);
+        catatan.setEnabled(d);
+//        delete.setEnabled(d);
+//        save.setEnabled(d);
     }
 
     void setDropDown(){
@@ -148,7 +239,7 @@ public class AddTransaksi extends AppCompatActivity {
             dropdown_name.add((cur.getNama_barang()) + " - " + cur.getKode_barang());
         }
 
-        ArrayAdapter arrayAdapter = new ArrayAdapter(this, R.layout.dropdownmenu, dropdown_name);
+        arrayAdapter = new ArrayAdapter(this, R.layout.dropdownmenu, dropdown_name);
         dropdown_stock.setText(arrayAdapter.getItem(0).toString(), false);
         dropdown_stock.setAdapter(arrayAdapter);
         pd.dismiss();
@@ -158,6 +249,36 @@ public class AddTransaksi extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 selected_Stock = i;
                 Toast.makeText(AddTransaksi.this, dropdown_name.get(i) + " dipilih", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String id_intent = getIntent().getStringExtra("id");
+                builder.setTitle(R.string.app_name);
+                builder.setMessage("Apakah anda yakin ingin menghapus item ini ?");
+//        builder.setIcon(R.drawable.ic_launcher);
+                builder.setPositiveButton("Ya", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        if(databaseHandler.deleteTransaksi(id_transaksi)){
+                            Intent intent = new Intent();
+                            intent.putExtra("refresh", "true");
+                            setResult(RESULT_OK, intent);
+                            finish();
+                            Toast.makeText(AddTransaksi.this, "Data transaksi berhasil dihapus ", Toast.LENGTH_SHORT).show();
+                        }else{
+                            Toast.makeText(AddTransaksi.this, "Terjadi kesalahan ", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+                builder.setNegativeButton("Tidak", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+                AlertDialog alert = builder.create();
+                alert.show();
             }
         });
 

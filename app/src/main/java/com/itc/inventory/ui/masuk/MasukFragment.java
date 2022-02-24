@@ -45,7 +45,7 @@ import com.itc.inventory.ui.laporan.AddTransaksi;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-public class MasukFragment extends Fragment{
+public class MasukFragment extends Fragment implements  MasukListAdapter.dataBack{
 
     private FragmentMasukBinding binding;
     DatePickerDialog.OnDateSetListener start, end;
@@ -78,7 +78,7 @@ public class MasukFragment extends Fragment{
         recyclerView = binding.rcMasuk;
         datefab = binding.rangeFab;
         addfab = binding.addFab;
-        MasukListAdapter = new MasukListAdapter(getActivity());
+        MasukListAdapter = new MasukListAdapter(getActivity(), this);
         recyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), LinearLayoutManager.VERTICAL));
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         MasukListAdapter.notifyDataSetChanged();
@@ -154,6 +154,7 @@ public class MasukFragment extends Fragment{
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), AddTransaksi.class);
                 intent.putExtra("tipe", String.valueOf(tipe));
+                intent.putExtra("view", "0");
                 activityResultLauncher.launch(intent);
 //                startActivity(intent);
             }
@@ -165,6 +166,12 @@ public class MasukFragment extends Fragment{
         pd.setCancelable(false);
         pd.show();
         fetchData();
+
+        if(!databaseHandler.checkRow()){
+            addfab.setEnabled(false);
+            datefab.setEnabled(false);
+        }
+
         return root;
     }
 
@@ -259,5 +266,14 @@ public class MasukFragment extends Fragment{
         };
 
 
+    }
+
+    @Override
+    public void detailTransaksi(Integer id_transaksi) {
+        Intent intent = new Intent(getActivity(), AddTransaksi.class);
+        intent.putExtra("tipe", String.valueOf(tipe));
+        intent.putExtra("view", "1");
+        intent.putExtra("id", String.valueOf(id_transaksi));
+        activityResultLauncher.launch(intent);
     }
 }

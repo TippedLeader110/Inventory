@@ -2,6 +2,7 @@ package com.itc.inventory.ui.laporan;
 
 public class TransaksiBarang {
 
+    Integer id_transaksi;
     String kode_barang;
     String nama_transaksi;
     String nama;
@@ -9,6 +10,14 @@ public class TransaksiBarang {
     int tipe_transaksi;
     String tgl_transaksi;
     String catatan;
+
+    public Integer getId_transaksi() {
+        return id_transaksi;
+    }
+
+    public void setId_transaksi(Integer id_transaksi) {
+        this.id_transaksi = id_transaksi;
+    }
 
     public String getKode_barang() {
         return kode_barang;
