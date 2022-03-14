@@ -15,13 +15,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.itc.inventory.DatabaseHandler;
 import com.itc.inventory.R;
+import com.itc.inventory.RetroClient;
 import com.itc.inventory.ui.laporan.TransaksiBarang;
+import com.itc.inventory.ui.laporan.TransaksiInterface;
+import com.itc.inventory.ui.stock.StockBarang;
 
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MasukListAdapter extends RecyclerView.Adapter<MasukListAdapter.MasukViewHolder> implements Filterable {
 
@@ -32,7 +39,9 @@ public class MasukListAdapter extends RecyclerView.Adapter<MasukListAdapter.Masu
     DatabaseHandler databaseHandler;
     NumberFormat money;
     MasukFragment masukFragment;
-
+    RetroClient retroClient;
+    ArrayList<StockBarang> listNama;
+    TransaksiInterface transaksiInterface;
 
     public MasukListAdapter(Context context, MasukFragment masukFragment) {
         this.context = context;
@@ -42,6 +51,24 @@ public class MasukListAdapter extends RecyclerView.Adapter<MasukListAdapter.Masu
         databaseHandler = new DatabaseHandler(context);
         money = NumberFormat.getCurrencyInstance(myIndonesianLocale);
         this.masukFragment = masukFragment;
+        retroClient = new RetroClient();
+        transaksiInterface = retroClient.getClient().create(TransaksiInterface.class);
+        listNama = new ArrayList<>();
+    }
+
+    public void getNama(){
+        Call<ArrayList<StockBarang>> getNama = transaksiInterface.getStockID();
+        getNama.enqueue(new Callback<ArrayList<StockBarang>>() {
+            @Override
+            public void onResponse(Call<ArrayList<StockBarang>> call, Response<ArrayList<StockBarang>> response) {
+                listNama.addAll(response.body());
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<StockBarang>> call, Throwable t) {
+
+            }
+        });
     }
 
     public void setData(ArrayList<TransaksiBarang> data){
@@ -71,12 +98,13 @@ public class MasukListAdapter extends RecyclerView.Adapter<MasukListAdapter.Masu
     @Override
     public void onBindViewHolder(@NonNull MasukViewHolder holder, int position) {
         int posisi = position;
-        String nama_item = databaseHandler.getStockNama(transaksiBarangs.get(posisi).getKode_barang());
+//        String nama_item = databaseHandler.getStockNama(transaksiBarangs.get(posisi).getKode_barang());
+//        String nama_item = getNamaID(transaksiBarangs.get(posisi).getKode_barang());
         int id_transaksi = transaksiBarangs.get(posisi).getId_transaksi();
-        transaksiBarangs.get(posisi).setNama_transaksi(nama_item);
+//        transaksiBarangs.get(posisi).setNama_transaksi(nama_item);
         String kiri = "Tanggal : " + transaksiBarangs.get(posisi).getTgl_transaksi();
         String kanan = "Jumlah : " + fmt(transaksiBarangs.get(posisi).getJumlah());
-        holder.setData(nama_item + " (" + transaksiBarangs.get(posisi).getNama() + ")", kiri, kanan);
+        holder.setData(transaksiBarangs.get(posisi).getNama_transaksi() + " (" + transaksiBarangs.get(posisi).getNama() + ")", kiri, kanan);
 
         holder.ll.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -88,6 +116,17 @@ public class MasukListAdapter extends RecyclerView.Adapter<MasukListAdapter.Masu
             }
         });
 
+    }
+
+    private String getNamaID(String kode_barang) {
+        String nama = null;
+
+        for(StockBarang val : listNama){
+            if(val.getKode_barang().equals(kode_barang)){
+                nama = val.getNama_barang();
+            }
+        }
+        return nama;
     }
 
     public class MasukViewHolder extends RecyclerView.ViewHolder{

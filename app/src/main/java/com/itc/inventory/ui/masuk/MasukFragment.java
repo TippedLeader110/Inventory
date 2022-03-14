@@ -39,11 +39,19 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.itc.inventory.DatabaseHandler;
 import com.itc.inventory.R;
+import com.itc.inventory.RetroClient;
 import com.itc.inventory.databinding.FragmentMasukBinding;
 import com.itc.inventory.ui.laporan.AddTransaksi;
+import com.itc.inventory.ui.laporan.TransaksiBarang;
+import com.itc.inventory.ui.laporan.TransaksiInterface;
+import com.itc.inventory.ui.stock.StockBarang;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MasukFragment extends Fragment implements  MasukListAdapter.dataBack{
 
@@ -56,6 +64,8 @@ public class MasukFragment extends Fragment implements  MasukListAdapter.dataBac
     DatabaseHandler databaseHandler;
     String sstart, ends;
     int tipe;
+    RetroClient retroClient;
+    TransaksiInterface transaksiInterface;
 
     public MasukFragment() {
         tipe = 1;
@@ -72,6 +82,8 @@ public class MasukFragment extends Fragment implements  MasukListAdapter.dataBac
         View root = binding.getRoot();
 
         setHasOptionsMenu(true);
+        retroClient = new RetroClient();
+        transaksiInterface = retroClient.getClient().create(TransaksiInterface.class);
 
         databaseHandler = new DatabaseHandler(getActivity());
 
@@ -166,24 +178,67 @@ public class MasukFragment extends Fragment implements  MasukListAdapter.dataBac
         pd.setCancelable(false);
         pd.show();
         fetchData();
-
-        if(!databaseHandler.checkRow()){
-            addfab.setEnabled(false);
-            datefab.setEnabled(false);
-        }
-
+        checkRow();
         return root;
+    }
+
+    private void checkRow() {
+        Call<ArrayList<StockBarang>> getRow = transaksiInterface.getStockID();
+        getRow.enqueue(new Callback<ArrayList<StockBarang>>() {
+            @Override
+            public void onResponse(Call<ArrayList<StockBarang>> call, Response<ArrayList<StockBarang>> response) {
+                if (response.body().size()==0){
+                    addfab.setEnabled(false);
+                    datefab.setEnabled(false);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<StockBarang>> call, Throwable t) {
+
+            }
+        });
     }
 
     private void startFilter(String sstart, String ends) {
         pd.show();
-        MasukListAdapter.setData(databaseHandler.getTransaksibyDate(tipe, sstart, ends));
-        pd.dismiss();
+        Call<ArrayList<TransaksiBarang>> getTransaksiDate = transaksiInterface.getTransaksiFilter(tipe, sstart, ends);
+        getTransaksiDate.enqueue(new Callback<ArrayList<TransaksiBarang>>() {
+            @Override
+            public void onResponse(Call<ArrayList<TransaksiBarang>> call, Response<ArrayList<TransaksiBarang>> response) {
+                MasukListAdapter.setData(response.body());
+                pd.dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<TransaksiBarang>> call, Throwable t) {
+                Log.w("Transaksi filter", t);
+                pd.dismiss();
+            }
+        });
+
     }
 
     public void fetchData(){
-        MasukListAdapter.setData(databaseHandler.getTransaksi(tipe));
-        pd.dismiss();
+//        MasukListAdapter.setData(databaseHandler.getTransaksi(tipe));
+        Call<ArrayList<TransaksiBarang>> transaksiCall = transaksiInterface.getTransaksi(tipe);
+
+        transaksiCall.enqueue(new Callback<ArrayList<TransaksiBarang>>() {
+            @Override
+            public void onResponse(Call<ArrayList<TransaksiBarang>> call, Response<ArrayList<TransaksiBarang>> response) {
+                MasukListAdapter.setData(response.body());
+                pd.dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<TransaksiBarang>> call, Throwable t) {
+                Toast.makeText(getActivity(), "Error", Toast.LENGTH_SHORT).show();
+                Log.e("TransaksiMasuk", "Error", t);
+                pd.dismiss();
+            }
+        });
+
+
     }
 
     @Override

@@ -30,6 +30,8 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 import com.itc.inventory.DatabaseHandler;
 import com.itc.inventory.R;
+import com.itc.inventory.ResponseData;
+import com.itc.inventory.RetroClient;
 import com.itc.inventory.databinding.ActivityTransaksiAddBinding;
 import com.itc.inventory.databinding.FragmentStockBinding;
 import com.itc.inventory.ui.stock.StockAdd;
@@ -37,6 +39,10 @@ import com.itc.inventory.ui.stock.StockBarang;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AddTransaksi extends AppCompatActivity {
 
@@ -54,10 +60,16 @@ public class AddTransaksi extends AppCompatActivity {
     Integer tipe, id_transaksi;
     Boolean add, mode;
     AlertDialog.Builder builder;
+    RetroClient retroClient;
+    TransaksiInterface transaksiInterface;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        retroClient = new RetroClient();
+        transaksiInterface = retroClient.getClient().create(TransaksiInterface.class);
+
         setContentView(R.layout.activity_transaksi_add);
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle("Tambah transaksi");
@@ -90,7 +102,7 @@ public class AddTransaksi extends AppCompatActivity {
             delete.setVisibility(View.VISIBLE);
             add = false;
             title.setText("Informasi detail transaksi");
-            save.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_assignment_24));
+            save.setImageDrawable(this.getDrawable(R.drawable.ic_baseline_assignment_24));
         }else{
             delete.setVisibility(View.GONE);
             add = true;
@@ -143,7 +155,6 @@ public class AddTransaksi extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(add){
-
                     getinputData();
 
                 }else{
@@ -168,7 +179,9 @@ public class AddTransaksi extends AppCompatActivity {
         transaksiBarang.setJumlah(Float.valueOf(stock.getEditText().getText().toString()));
         transaksiBarang.setKode_barang(dropdown_kode.get(selected_Stock));
 
-
+        pd.setTitle("Mengirim data");
+        pd.setMessage("Mohon menunggu.....");
+        pd.show();
         builder.setTitle(R.string.app_name);
         builder.setMessage("Apakah data sudah benar ?");
 //        builder.setIcon(R.drawable.ic_launcher);
@@ -176,16 +189,40 @@ public class AddTransaksi extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int id) {
                 String msg;
                 if(mode){
-                    msg = databaseHandler.editTransaksi(transaksiBarang, id_transaksi);
+//                    msg = databaseHandler.editTransaksi(transaksiBarang, id_transaksi);
+                    Call<ResponseData> editData = transaksiInterface.editTransaksi(id_transaksi, transaksiBarang.getJumlah(), transaksiBarang.getCatatan(), transaksiBarang.getNama(), transaksiBarang.getTgl_transaksi(), transaksiBarang.getTipe_transaksi());
+                    editData.enqueue(new Callback<ResponseData>() {
+                        @Override
+                        public void onResponse(Call<ResponseData> call, Response<ResponseData> response) {
+                            doneJobe(response.body().getCode(), response.body().getMsg());
+                            pd.dismiss();
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseData> call, Throwable t) {
+                            Toast.makeText(AddTransaksi.this, "Terjadi kesalahan", Toast.LENGTH_SHORT).show();
+                            Log.e("AddTransaksi", "Edit", t);
+                            pd.dismiss();
+                        }
+                    });
+
                 }else{
-                    msg = databaseHandler.addTransaksi(transaksiBarang);
+                    Call<ResponseData> editData = transaksiInterface.tambahTransaksi(transaksiBarang.kode_barang, transaksiBarang.getJumlah(), transaksiBarang.getCatatan(), transaksiBarang.getNama(), transaksiBarang.getTgl_transaksi(), transaksiBarang.getTipe_transaksi());
+                    editData.enqueue(new Callback<ResponseData>() {
+                        @Override
+                        public void onResponse(Call<ResponseData> call, Response<ResponseData> response) {
+                            doneJobe(response.body().getCode(), response.body().getMsg());
+                            pd.dismiss();
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseData> call, Throwable t) {
+                            Toast.makeText(AddTransaksi.this, "Terjadi kesalahan", Toast.LENGTH_SHORT).show();
+                            Log.e("AddTransaksi", "Edit", t);
+                            pd.dismiss();
+                        }
+                    });
                 }
-                Intent intent = new Intent();
-                intent.putExtra("refresh", "true");
-                setResult(RESULT_OK, intent);
-                finish();
-//                    Toast.makeText(AddTransaksi.this, databaseHandler.addTransaksi(transaksiBarang), Toast.LENGTH_SHORT).show();;
-                Snackbar.make(findViewById(android.R.id.content), msg, Snackbar.LENGTH_LONG).show();
             }
         });
         builder.setNegativeButton("Tidak", new DialogInterface.OnClickListener() {
@@ -197,25 +234,58 @@ public class AddTransaksi extends AppCompatActivity {
         alert.show();
     }
 
-    private void setData(Integer id) {
-        TransaksiBarang transaksiBarang = new TransaksiBarang();
-
-        transaksiBarang = databaseHandler.getTransaksiDetail(id);
-        tgl.getEditText().setText(transaksiBarang.getTgl_transaksi());
-        nama.getEditText().setText(transaksiBarang.getNama());
-        catatan.getEditText().setText(transaksiBarang.getCatatan());
-        stock.getEditText().setText(transaksiBarang.getJumlah().toString());
-        id_transaksi = id;
-        int i = 0;
-        for (String data : dropdown_kode){
-            if(data.equals(transaksiBarang.getKode_barang())){
-                break;
-            }
-            i++;
+    void doneJobe(Integer code, String msg){
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        if(code!=999){
+            Intent intent = new Intent();
+            intent.putExtra("refresh", "true");
+            setResult(RESULT_OK, intent);
+            finish();
+//                    Toast.makeText(AddTransaksi.this, databaseHandler.addTransaksi(transaksiBarang), Toast.LENGTH_SHORT).show();;
+            Snackbar.make(findViewById(android.R.id.content), msg, Snackbar.LENGTH_LONG).show();
         }
-        selected_Stock = i;
-        dropdown_stock.setText(dropdown_name.get(i), false);
-        dropdown_stock.setEnabled(false);
+    }
+
+    private void setData(Integer id) {
+//        TransaksiBarang transaksiBarang = new TransaksiBarang();
+
+//        transaksiBarang = databaseHandler.getTransaksiDetail(id);
+        pd.setTitle("Mengambil Data");
+        pd.setMessage("Mohon tunggu....");
+        pd.show();
+
+        Call<TransaksiBarang> getInfo = transaksiInterface.getTransaksiDetil(id);
+
+        getInfo.enqueue(new Callback<TransaksiBarang>() {
+            @Override
+            public void onResponse(Call<TransaksiBarang> call, Response<TransaksiBarang> response) {
+                TransaksiBarang transaksiBarang = response.body();
+                tgl.getEditText().setText(transaksiBarang.getTgl_transaksi());
+                nama.getEditText().setText(transaksiBarang.getNama());
+                catatan.getEditText().setText(transaksiBarang.getCatatan());
+                stock.getEditText().setText(transaksiBarang.getJumlah().toString());
+                id_transaksi = id;
+                int i = 0;
+                for (String data : dropdown_kode){
+                    if(data.equals(transaksiBarang.getKode_barang())){
+                        break;
+                    }
+                    i++;
+                }
+                selected_Stock = i;
+                dropdown_stock.setText(dropdown_name.get(i), false);
+                dropdown_stock.setEnabled(false);
+                pd.dismiss();
+            }
+
+            @Override
+            public void onFailure(Call<TransaksiBarang> call, Throwable t) {
+                Toast.makeText(AddTransaksi.this, "Terjadi kesalahan saat mengambil data", Toast.LENGTH_SHORT).show();
+                Log.e("AddTransaksi", "Call Error", t);
+            }
+        });
+
+
     }
 
     public void setEnable(Boolean d){
@@ -233,52 +303,75 @@ public class AddTransaksi extends AppCompatActivity {
         pd.setTitle("Memuat daftar stock");
         pd.setMessage("Memuat........");
         pd.show();
-        stockBarangArrayList = databaseHandler.getStock();
-        for (StockBarang cur: stockBarangArrayList){
-            dropdown_kode.add(cur.getKode_barang());
-            dropdown_name.add((cur.getNama_barang()) + " - " + cur.getKode_barang());
-        }
+        Call<ArrayList<StockBarang>> getStockID = transaksiInterface.getStockID();
 
-        arrayAdapter = new ArrayAdapter(this, R.layout.dropdownmenu, dropdown_name);
-        dropdown_stock.setText(arrayAdapter.getItem(0).toString(), false);
-        dropdown_stock.setAdapter(arrayAdapter);
-        pd.dismiss();
-
-        dropdown_stock.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        getStockID.enqueue(new Callback<ArrayList<StockBarang>>() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                selected_Stock = i;
-                Toast.makeText(AddTransaksi.this, dropdown_name.get(i) + " dipilih", Toast.LENGTH_SHORT).show();
-            }
-        });
+            public void onResponse(Call<ArrayList<StockBarang>> call, Response<ArrayList<StockBarang>> response) {
+                stockBarangArrayList = new ArrayList<>();
+                stockBarangArrayList.addAll(response.body());
+                for (StockBarang cur: stockBarangArrayList){
+                    dropdown_kode.add(cur.getKode_barang());
+                    dropdown_name.add((cur.getNama_barang()) + " - " + cur.getKode_barang());
+                }
 
-        delete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String id_intent = getIntent().getStringExtra("id");
-                builder.setTitle(R.string.app_name);
-                builder.setMessage("Apakah anda yakin ingin menghapus item ini ?");
+                arrayAdapter = new ArrayAdapter(AddTransaksi.this, R.layout.dropdownmenu, dropdown_name);
+                dropdown_stock.setText(arrayAdapter.getItem(0).toString(), false);
+                dropdown_stock.setAdapter(arrayAdapter);
+                pd.dismiss();
+
+                dropdown_stock.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        selected_Stock = i;
+                        Toast.makeText(AddTransaksi.this, dropdown_name.get(i) + " dipilih", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                delete.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        String id_intent = getIntent().getStringExtra("id");
+                        builder.setTitle(R.string.app_name);
+                        builder.setMessage("Apakah anda yakin ingin menghapus item ini ?");
 //        builder.setIcon(R.drawable.ic_launcher);
-                builder.setPositiveButton("Ya", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        if(databaseHandler.deleteTransaksi(id_transaksi)){
-                            Intent intent = new Intent();
-                            intent.putExtra("refresh", "true");
-                            setResult(RESULT_OK, intent);
-                            finish();
-                            Toast.makeText(AddTransaksi.this, "Data transaksi berhasil dihapus ", Toast.LENGTH_SHORT).show();
-                        }else{
-                            Toast.makeText(AddTransaksi.this, "Terjadi kesalahan ", Toast.LENGTH_SHORT).show();
-                        }
+                        builder.setPositiveButton("Ya", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                pd.setTitle("Mengahpus data");
+                                pd.setMessage("Mohon menunggu......");
+                                pd.show();
+                                Call<ResponseData> deleteTransaksi = transaksiInterface.hapusTransaksi(id_transaksi);
+                                deleteTransaksi.enqueue(new Callback<ResponseData>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseData> call, Response<ResponseData> response) {
+                                        pd.dismiss();
+                                        doneJobe(response.body().getCode(), response.body().getMsg());
+                                        dialog.dismiss();
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseData> call, Throwable t) {
+                                        pd.dismiss();
+                                        dialog.dismiss();
+                                    }
+                                });
+                            }
+                        });
+                        builder.setNegativeButton("Tidak", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.dismiss();
+                            }
+                        });
+                        AlertDialog alert = builder.create();
+                        alert.show();
                     }
                 });
-                builder.setNegativeButton("Tidak", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.dismiss();
-                    }
-                });
-                AlertDialog alert = builder.create();
-                alert.show();
+
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<StockBarang>> call, Throwable t) {
+
             }
         });
 

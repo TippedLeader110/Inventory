@@ -16,7 +16,9 @@ import android.widget.Toast;
 import com.google.android.material.textfield.TextInputLayout;
 import com.itc.inventory.DatabaseHandler;
 import com.itc.inventory.R;
+import com.itc.inventory.RetroClient;
 import com.itc.inventory.ui.stock.StockBarang;
+import com.itc.inventory.ui.stock.StockInterface;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +38,9 @@ import jxl.write.WritableCellFormat;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class DateFilter extends AppCompatActivity {
 
@@ -43,12 +48,22 @@ public class DateFilter extends AppCompatActivity {
     Integer mode;
     TextInputLayout start, end;
     Button next;
+    RetroClient retroClient;
+    TransaksiInterface transaksiInterface;
+    StockInterface stockInterface;
+    ArrayList<TransaksiBarang> listTransaksi;
+    ArrayList<StockBarang> listStok;
+    String edate, sdate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_date_filter);
-
+        retroClient = new RetroClient();
+        transaksiInterface = retroClient.getClient().create(TransaksiInterface.class);
+        stockInterface = retroClient.getClient().create(StockInterface.class);
+        listTransaksi = new ArrayList<>();
+        listStok = new ArrayList<>();
         databaseHandler = new DatabaseHandler(this);
         mode = Integer.valueOf(getIntent().getStringExtra("mode"));
 
@@ -131,7 +146,56 @@ public class DateFilter extends AppCompatActivity {
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                exportData();
+                sdate = start.getEditText().getText().toString();
+                edate = end.getEditText().getText().toString();
+
+
+                Call<ArrayList<TransaksiBarang>> getTransaksi = transaksiInterface.getTransaksiAll();
+                getTransaksi.enqueue(new Callback<ArrayList<TransaksiBarang>>() {
+                    @Override
+                    public void onResponse(Call<ArrayList<TransaksiBarang>> call, Response<ArrayList<TransaksiBarang>> response) {
+//                            listTransaksi.addAll(response.body());
+                        databaseHandler.truncate();
+                        for(TransaksiBarang val : response.body()){
+                            databaseHandler.addTransaksi(val);
+                        }
+                        Call<ArrayList<StockBarang>> getStock = stockInterface.getStocks();
+                        getStock.enqueue(new Callback<ArrayList<StockBarang>>() {
+                            @Override
+                            public void onResponse(Call<ArrayList<StockBarang>> call, Response<ArrayList<StockBarang>> response) {
+                                listStok.addAll(response.body());
+
+                                for(StockBarang val : response.body()){
+                                    databaseHandler.addStockData(val);
+                                }
+
+                                listTransaksi.addAll((databaseHandler.getTransaksibyDate(mode-1, sdate, edate)));
+                                exportData();
+
+//                                if(mode==2 || mode==3){
+//                                    listTransaksi.addAll((databaseHandler.getTransaksibyDate(mode-1, sdate, edate)));
+//                                    exportData();
+//                                }else{
+//
+//                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ArrayList<StockBarang>> call, Throwable t) {
+                                Log.w("Stock Export", t);
+                            }
+                        });
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<ArrayList<TransaksiBarang>> call, Throwable t) {
+                        Log.w("Transaksi Filter export", t);
+                    }
+                });
+
+
+//                exportData();
 //                Toast.makeText(DateFilter.this, "mode : " + mode, Toast.LENGTH_SHORT).show();
             }
         });
@@ -144,8 +208,7 @@ public class DateFilter extends AppCompatActivity {
         money = NumberFormat.getCurrencyInstance(myIndonesianLocale);
 
         String titleFile = "";
-        String sdate = start.getEditText().getText().toString();
-        String edate = end.getEditText().getText().toString();
+
 
         if(mode==1){
             titleFile = "Stock";
@@ -154,14 +217,9 @@ public class DateFilter extends AppCompatActivity {
         }else{
             titleFile = "Transaksi Keluar";
         }
-        ArrayList<TransaksiBarang> listTransaksi = new ArrayList<>();
-        ArrayList<StockBarang> listStok = new ArrayList<>();
 
-        if(mode==2 || mode==3){
-            listTransaksi.addAll((databaseHandler.getTransaksibyDate(mode-1, sdate, edate)));
-        }else{
-            listStok.addAll(databaseHandler.getStock());
-        }
+
+
 
 
         File sd = Environment.getExternalStorageDirectory();

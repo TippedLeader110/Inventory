@@ -1,17 +1,24 @@
 package com.itc.inventory.ui.stock;
 
-public class StockBarang {
+import com.google.gson.annotations.SerializedName;
 
+public class StockBarang {
+    @SerializedName("kode_barang")
     String kode_barang;
 
+    @SerializedName("nama_barang")
     String nama_barang;
 
+    @SerializedName("nilai_satuan")
     float nilai_satuan;
 
+    @SerializedName("satuan")
     String satuan;
 
+    @SerializedName("harga")
     Float harga;
 
+    @SerializedName("stock")
     Float stock;
 
     public String getKode_barang() {

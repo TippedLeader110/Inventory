@@ -97,11 +97,12 @@ public class StockListAdapter extends RecyclerView.Adapter<StockListAdapter.Stoc
         int posisi = position;
 
         float stock = stockBarangs.get(position).getStock();
+
         float nilai_satuan = stockBarangs.get(position).getNilai_satuan();
         float harga = stockBarangs.get(position).getHarga();
         String satuan = stockBarangs.get(position).getSatuan();
         String kode = stockBarangs.get(posisi).getKode_barang();
-        stock = hitungStock(stock, databaseHandler.getRecordTransaksi(kode, 1), databaseHandler.getRecordTransaksi(kode, 2));
+//        stock = hitungStock(stock, databaseHandler.getRecordTransaksi(kode, 1), databaseHandler.getRecordTransaksi(kode, 2));
         float totalStock = stock*nilai_satuan;
 
         String kiri = "Stock = " + fmt(stock) + "("+ fmt(totalStock) +" "+ satuan +")";

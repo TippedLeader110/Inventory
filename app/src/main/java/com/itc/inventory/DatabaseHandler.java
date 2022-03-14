@@ -196,6 +196,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     }
 
+    public void truncate(){
+        db = this.getWritableDatabase();
+        db.execSQL("delete from " + TABLE_STOCK);
+        db.execSQL("delete from " + TABLE_TRANSAKSI);
+    }
+
     @SuppressLint("Range")
     public ArrayList<TransaksiBarang> getTransaksibyDate(int tipe, String sstart, String ends) {
 

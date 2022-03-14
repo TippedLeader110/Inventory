@@ -1,14 +1,31 @@
 package com.itc.inventory.ui.laporan;
 
+import com.google.gson.annotations.SerializedName;
+
 public class TransaksiBarang {
 
+    @SerializedName("id_transaksi")
     Integer id_transaksi;
+
+    @SerializedName("kode_barang")
     String kode_barang;
+
+    @SerializedName("nama_transaksi")
     String nama_transaksi;
+
+    @SerializedName("nama")
     String nama;
+
+    @SerializedName("jumlah")
     Float jumlah;
+
+    @SerializedName("tipe_transaksi")
     int tipe_transaksi;
+
+    @SerializedName("tgl_transaksi")
     String tgl_transaksi;
+
+    @SerializedName("catatan")
     String catatan;
 
     public Integer getId_transaksi() {
