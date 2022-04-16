@@ -1,10 +1,15 @@
 package com.itc.inventory.ui.laporan;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.DatePickerDialog;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -20,8 +25,20 @@ import com.itc.inventory.RetroClient;
 import com.itc.inventory.ui.stock.StockBarang;
 import com.itc.inventory.ui.stock.StockInterface;
 
+import org.apache.commons.io.IOUtils;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -31,16 +48,20 @@ import java.util.Locale;
 import jxl.CellView;
 import jxl.Workbook;
 import jxl.WorkbookSettings;
+import jxl.format.Alignment;
 import jxl.format.Border;
 import jxl.format.BorderLineStyle;
 import jxl.write.Label;
 import jxl.write.WritableCellFormat;
+import jxl.write.WritableImage;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import org.apache.commons.io.FileUtils;
+
 
 public class DateFilter extends AppCompatActivity {
 
@@ -161,6 +182,7 @@ public class DateFilter extends AppCompatActivity {
                         }
                         Call<ArrayList<StockBarang>> getStock = stockInterface.getStocks();
                         getStock.enqueue(new Callback<ArrayList<StockBarang>>() {
+                            @RequiresApi(api = Build.VERSION_CODES.O)
                             @Override
                             public void onResponse(Call<ArrayList<StockBarang>> call, Response<ArrayList<StockBarang>> response) {
                                 listStok.addAll(response.body());
@@ -202,6 +224,21 @@ public class DateFilter extends AppCompatActivity {
 
     }
 
+    private static WritableCellFormat getCellFormat(WritableCellFormat format, Alignment alignment) {
+        try {
+            format.setVerticalAlignment(jxl.format.VerticalAlignment.CENTRE);
+            format.setAlignment(alignment);
+            format.setBorder(Border.BOTTOM, BorderLineStyle.THIN);
+            format.setBorder(Border.LEFT, BorderLineStyle.THIN);
+            format.setBorder(Border.RIGHT, BorderLineStyle.THIN);
+            format.setBorder(Border.TOP, BorderLineStyle.THIN);
+        } catch (WriteException e) {
+            return format;
+        }
+        return format;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void exportData() {
         NumberFormat money;
         Locale myIndonesianLocale = new Locale("in", "ID");
@@ -217,9 +254,6 @@ public class DateFilter extends AppCompatActivity {
         }else{
             titleFile = "Transaksi Keluar";
         }
-
-
-
 
 
         File sd = Environment.getExternalStorageDirectory();
@@ -241,55 +275,98 @@ public class DateFilter extends AppCompatActivity {
             int basePosition = 0;
 
             WritableCellFormat cellFormat = new WritableCellFormat();
-            cellFormat.setBorder(Border.ALL, BorderLineStyle.THIN);
+            cellFormat.setBorder(Border.BOTTOM, BorderLineStyle.THIN);
+            cellFormat.setBorder(Border.LEFT, BorderLineStyle.THIN);
+            cellFormat.setBorder(Border.RIGHT, BorderLineStyle.THIN);
+            cellFormat.setBorder(Border.TOP, BorderLineStyle.THIN);
+
+            WritableCellFormat format = new WritableCellFormat();
+            format.setAlignment(Alignment.CENTRE);
+
+            InputStream raw = this.getAssets().open("logo.png");
+//            Reader is = new BufferedReader(new InputStreamReader(raw, "UTF8"));
+//            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_baseline_add_24);
+//            AssetManager am = getAssets();
+//            InputStream inputStream = am.open("Indroduction.pdf");
+//            File f = new File("templogo.png");
+//            File logo = new File("/path/to/logo.png");
+
+
+//            URL url = new URL("http://192.168.208.134:3000/logo.png");
+//            File logo = new File("file:///android_asset/logo.png");
+            File logo = File.createTempFile( "logo", ".png" );
+            FileUtils.copyToFile( raw, logo );
+            sheetA.mergeCells(0, 0, 1, 3);
+            sheetA.mergeCells(2, 1, 4, 1);
+            sheetA.mergeCells(2, 2, 4, 2);
+            WritableImage im = new WritableImage(0, 0, 2, 4, logo);
+            sheetA.addImage(im);
 
             if(mode==1){
-                sheetA.addCell(new Label(0, 0, "Kode Barang"));
-                sheetA.addCell(new Label(1, 0, "Nama Barang"));
-                sheetA.addCell(new Label(2, 0, "Satuan"));
-                sheetA.addCell(new Label(3, 0, "Harga"));
-                sheetA.addCell(new Label(4, 0, "Stok"));
-                int i = 1;
+                sheetA.addCell(new Label(2, 1, "Daftar Stok Barang", format));
+                sheetA.addCell(new Label(2, 2, "MEDAN SUGAR INDUSTRY", format));
+                sheetA.addCell(new Label(0, 5, "Kode Barang", cellFormat));
+                sheetA.addCell(new Label(1, 5, "Nama Barang", cellFormat));
+                sheetA.addCell(new Label(2, 5, "Satuan", cellFormat));
+                sheetA.addCell(new Label(3, 5, "Harga", cellFormat));
+                sheetA.addCell(new Label(4, 5, "Stok", cellFormat));
+//                WriteableIm
+//                sheetA.addImage(bitmap);
+                int i = 6;
                 for(StockBarang br : listStok){
                     Float stock = hitungStock(br.getStock(), databaseHandler.getRecordTransaksi(br.getKode_barang(), 1), databaseHandler.getRecordTransaksi(br.getKode_barang(), 2));
-                    sheetA.addCell(new Label(0, i, br.getKode_barang()));
-                    sheetA.addCell(new Label(1, i, br.getNama_barang()));
-                    sheetA.addCell(new Label(2, i, br.getNilai_satuan() + "/" + br.getSatuan()));
-                    sheetA.addCell(new Label(3, i, money.format(br.getHarga())));
-                    sheetA.addCell(new Label(4, i, String.valueOf(stock)));
+                    sheetA.addCell(new Label(0, i, br.getKode_barang(), cellFormat));
+                    sheetA.addCell(new Label(1, i, br.getNama_barang(), cellFormat));
+                    sheetA.addCell(new Label(2, i, br.getNilai_satuan() + "/" + br.getSatuan(), cellFormat));
+                    sheetA.addCell(new Label(3, i, money.format(br.getHarga()), cellFormat));
+                    sheetA.addCell(new Label(4, i, String.valueOf(stock), cellFormat));
                     i++;
                 }
+                i +=4;
+                sheetA.addCell(new Label(3, i, "PT Medan Sugar Industry"));
+                sheetA.addCell(new Label(3, i+1, "Industry Control"));
+                sheetA.addCell(new Label(3, i+6, "Syahran Aran"));
             }
 
             if(mode==2 || mode==3){
                 ArrayList<StockBarang> totalStock = new ArrayList();
                 totalStock.addAll(databaseHandler.getStock());
-
-                sheetA.addCell(new Label(0, 0, "Tanggal"));
-                sheetA.addCell(new Label(1, 0, "Kode Barang"));
-                sheetA.addCell(new Label(2, 0, "Nama Barang"));
-                sheetA.addCell(new Label(3, 0, "Nama yang bertanggung jawab"));
-                sheetA.addCell(new Label(4, 0, "Jumlah Transaksi"));
-                sheetA.addCell(new Label(5, 0, "Catatan"));
-                int i = 1;
+                if(mode==2){
+                    sheetA.addCell(new Label(2, 1, "Daftar Barang Masuk", format));
+                }else{
+                    sheetA.addCell(new Label(2, 1, "Daftar Barang Keluar", format));
+                }
+                sheetA.addCell(new Label(2, 2, "MEDAN SUGAR INDUSTRY", format));
+                sheetA.addCell(new Label(0, 5, "Tanggal", cellFormat));
+                sheetA.addCell(new Label(1, 5, "Kode Barang", cellFormat));
+                sheetA.addCell(new Label(2, 5, "Nama Barang", cellFormat));
+                sheetA.addCell(new Label(3, 5, "Nama yang bertanggung jawab", cellFormat));
+                sheetA.addCell(new Label(4, 5, "Jumlah Transaksi", cellFormat));
+                sheetA.addCell(new Label(5, 5, "Catatan", cellFormat));
+                int i = 6;
                 for (TransaksiBarang br : listTransaksi){
 //                    databaseHandler.getRecordTransaksi(br.getKode_barang(), mode);
                     String total = "";
 
-                    sheetA.addCell(new Label(0, i, br.getTgl_transaksi()));
-                    sheetA.addCell(new Label(1, i, br.getKode_barang()));
-                    sheetA.addCell(new Label(2, i, databaseHandler.getStockNama(br.getKode_barang())));
-                    sheetA.addCell(new Label(3, i, br.getNama()));
-                    sheetA.addCell(new Label(4, i, String.valueOf(br.getJumlah())));
-                    sheetA.addCell(new Label(5, i, String.valueOf(br.getCatatan())));
+                    sheetA.addCell(new Label(0, i, br.getTgl_transaksi(), cellFormat));
+                    sheetA.addCell(new Label(1, i, br.getKode_barang(), cellFormat));
+                    sheetA.addCell(new Label(2, i, databaseHandler.getStockNama(br.getKode_barang()), cellFormat));
+                    sheetA.addCell(new Label(3, i, br.getNama(), cellFormat));
+                    sheetA.addCell(new Label(4, i, String.valueOf(br.getJumlah()), cellFormat));
+                    sheetA.addCell(new Label(5, i, String.valueOf(br.getCatatan()), cellFormat));
                     i++;
                 }
 
-                for (int c=0; c<100; c++){
-                    CellView cell = sheetA.getColumnView(c);
-                    cell.setAutosize(true);
-                    sheetA.setColumnView(c, cell);
-                }
+                i +=4;
+                sheetA.addCell(new Label(3, i, "PT Medan Sugar Industry"));
+                sheetA.addCell(new Label(3, i+1, "Industry Control"));
+                sheetA.addCell(new Label(3, i+6, "Syahran Aran"));
+
+            }
+            for (int c=0; c<100; c++){
+                CellView cell = sheetA.getColumnView(c);
+                cell.setAutosize(true);
+                sheetA.setColumnView(c, cell);
             }
             workbook.write();
             workbook.close();

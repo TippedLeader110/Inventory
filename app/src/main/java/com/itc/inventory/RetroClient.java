@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetroClient {
 
-    public static final String BASE_URL = "http://inventoriskita.id:3000/";
+    public static final String BASE_URL = "10.0.2.2:3000/";
     Retrofit retrofit;
 
     public RetroClient() {
