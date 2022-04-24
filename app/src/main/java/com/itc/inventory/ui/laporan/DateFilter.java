@@ -51,6 +51,7 @@ import jxl.WorkbookSettings;
 import jxl.format.Alignment;
 import jxl.format.Border;
 import jxl.format.BorderLineStyle;
+import jxl.format.VerticalAlignment;
 import jxl.write.Label;
 import jxl.write.WritableCellFormat;
 import jxl.write.WritableImage;
@@ -275,13 +276,18 @@ public class DateFilter extends AppCompatActivity {
             int basePosition = 0;
 
             WritableCellFormat cellFormat = new WritableCellFormat();
-            cellFormat.setBorder(Border.BOTTOM, BorderLineStyle.THIN);
-            cellFormat.setBorder(Border.LEFT, BorderLineStyle.THIN);
-            cellFormat.setBorder(Border.RIGHT, BorderLineStyle.THIN);
-            cellFormat.setBorder(Border.TOP, BorderLineStyle.THIN);
+            cellFormat.setBorder(Border.BOTTOM, BorderLineStyle.DOUBLE);
+            cellFormat.setBorder(Border.LEFT, BorderLineStyle.DOUBLE);
+            cellFormat.setBorder(Border.RIGHT, BorderLineStyle.DOUBLE);
+            cellFormat.setBorder(Border.TOP, BorderLineStyle.DOUBLE);
 
             WritableCellFormat format = new WritableCellFormat();
             format.setAlignment(Alignment.CENTRE);
+            format.setVerticalAlignment(VerticalAlignment.CENTRE);
+            format.setBorder(Border.TOP, BorderLineStyle.DOUBLE);
+            format.setBorder(Border.BOTTOM, BorderLineStyle.DOUBLE);
+            format.setBorder(Border.LEFT, BorderLineStyle.DOUBLE);
+            format.setBorder(Border.RIGHT, BorderLineStyle.DOUBLE);
 
             InputStream raw = this.getAssets().open("logo.png");
 //            Reader is = new BufferedReader(new InputStreamReader(raw, "UTF8"));
@@ -297,13 +303,14 @@ public class DateFilter extends AppCompatActivity {
             File logo = File.createTempFile( "logo", ".png" );
             FileUtils.copyToFile( raw, logo );
             sheetA.mergeCells(0, 0, 1, 3);
-            sheetA.mergeCells(2, 1, 4, 1);
-            sheetA.mergeCells(2, 2, 4, 2);
+            sheetA.mergeCells(2, 0, 4, 1);
+            sheetA.mergeCells(2, 2, 4, 3);
+            sheetA.addCell(new Label(0,0,"", format));
             WritableImage im = new WritableImage(0, 0, 2, 4, logo);
             sheetA.addImage(im);
 
             if(mode==1){
-                sheetA.addCell(new Label(2, 1, "Daftar Stok Barang", format));
+                sheetA.addCell(new Label(2, 0, "Daftar Stok Barang", format));
                 sheetA.addCell(new Label(2, 2, "MEDAN SUGAR INDUSTRY", format));
                 sheetA.addCell(new Label(0, 5, "Kode Barang", cellFormat));
                 sheetA.addCell(new Label(1, 5, "Nama Barang", cellFormat));
@@ -332,9 +339,9 @@ public class DateFilter extends AppCompatActivity {
                 ArrayList<StockBarang> totalStock = new ArrayList();
                 totalStock.addAll(databaseHandler.getStock());
                 if(mode==2){
-                    sheetA.addCell(new Label(2, 1, "Daftar Barang Masuk", format));
+                    sheetA.addCell(new Label(2, 0, "Daftar Barang Masuk", format));
                 }else{
-                    sheetA.addCell(new Label(2, 1, "Daftar Barang Keluar", format));
+                    sheetA.addCell(new Label(2, 0, "Daftar Barang Keluar", format));
                 }
                 sheetA.addCell(new Label(2, 2, "MEDAN SUGAR INDUSTRY", format));
                 sheetA.addCell(new Label(0, 5, "Tanggal", cellFormat));

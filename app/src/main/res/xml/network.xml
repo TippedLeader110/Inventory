@@ -3,7 +3,7 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">inventoriskita.id</domain>
         <domain includeSubdomains="true">http://inventoriskita.id</domain>
-        <domain includeSubdomains="true">192.168.208.134</domain>
+        <domain includeSubdomains="true">192.168.167.134</domain>
         <domain includeSubdomains="true">10.0.2.2</domain>
         <domain includeSubdomains="true">http://inventoriskita.id:3000</domain>
     </domain-config>
