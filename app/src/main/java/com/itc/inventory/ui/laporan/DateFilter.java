@@ -336,6 +336,8 @@ public class DateFilter extends AppCompatActivity {
             }
 
             if(mode==2 || mode==3){
+                sheetA.mergeCells(2, 0, 5, 1);
+                sheetA.mergeCells(2, 2, 5, 3);
                 ArrayList<StockBarang> totalStock = new ArrayList();
                 totalStock.addAll(databaseHandler.getStock());
                 if(mode==2){
@@ -365,9 +367,9 @@ public class DateFilter extends AppCompatActivity {
                 }
 
                 i +=4;
-                sheetA.addCell(new Label(3, i, "PT Medan Sugar Industry"));
-                sheetA.addCell(new Label(3, i+1, "Industry Control"));
-                sheetA.addCell(new Label(3, i+6, "Syahran Aran"));
+                sheetA.addCell(new Label(5, i, "PT Medan Sugar Industry"));
+                sheetA.addCell(new Label(5, i+1, "Industry Control"));
+                sheetA.addCell(new Label(5, i+6, "Syahran Aran"));
 
             }
             for (int c=0; c<100; c++){
