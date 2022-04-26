@@ -326,7 +326,7 @@ public class DateFilter extends AppCompatActivity {
                     sheetA.addCell(new Label(1, i, br.getNama_barang(), cellFormat));
                     sheetA.addCell(new Label(2, i, br.getNilai_satuan() + "/" + br.getSatuan(), cellFormat));
                     sheetA.addCell(new Label(3, i, money.format(br.getHarga()), cellFormat));
-                    sheetA.addCell(new Label(4, i, String.valueOf(stock), cellFormat));
+                    sheetA.addCell(new Label(4, i, String.valueOf(br.getStock()), cellFormat));
                     i++;
                 }
                 i +=4;
