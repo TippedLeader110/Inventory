@@ -303,13 +303,14 @@ public class DateFilter extends AppCompatActivity {
             File logo = File.createTempFile( "logo", ".png" );
             FileUtils.copyToFile( raw, logo );
             sheetA.mergeCells(0, 0, 1, 3);
-            sheetA.mergeCells(2, 0, 4, 1);
-            sheetA.mergeCells(2, 2, 4, 3);
+
             sheetA.addCell(new Label(0,0,"", format));
             WritableImage im = new WritableImage(0, 0, 2, 4, logo);
             sheetA.addImage(im);
 
             if(mode==1){
+                sheetA.mergeCells(2, 0, 4, 1);
+                sheetA.mergeCells(2, 2, 4, 3);
                 sheetA.addCell(new Label(2, 0, "Daftar Stok Barang", format));
                 sheetA.addCell(new Label(2, 2, "MEDAN SUGAR INDUSTRY", format));
                 sheetA.addCell(new Label(0, 5, "Kode Barang", cellFormat));
