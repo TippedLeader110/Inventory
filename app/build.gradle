@@ -31,8 +31,10 @@ android {
     }
 }
 
+
 dependencies {
     api group: 'commons-io', name: 'commons-io', version: '2.6'
+    api group: 'com.aspose', name: 'aspose-cells', version: '20.6', classifier: 'android.via.java'
     implementation 'com.squareup.okhttp3:okhttp:3.6.0'
     implementation 'com.google.code.gson:gson:2.8.7'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
