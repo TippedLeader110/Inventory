@@ -18,6 +18,8 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.Toast;
 
+import com.aspose.cells.PageOrientationType;
+import com.aspose.cells.PdfSaveOptions;
 import com.aspose.cells.SaveFormat;
 import com.google.android.material.textfield.TextInputLayout;
 import com.itc.inventory.DatabaseHandler;
@@ -381,9 +383,12 @@ public class DateFilter extends AppCompatActivity {
             }
             workbook.write();
             workbook.close();
+
             com.aspose.cells.Workbook wkr = new com.aspose.cells.Workbook(Environment.getExternalStorageDirectory() +"/"+ exportFile);
             String localPath = Environment.getExternalStorageDirectory().getPath() + File.separator;
-
+            if(mode!=1){
+                wkr.getWorksheets().get(0).getPageSetup().setOrientation(PageOrientationType.LANDSCAPE);
+            }
             wkr.save(localPath + exportFile + ".pdf" , SaveFormat.PDF);
 
             Toast.makeText(DateFilter.this, "File berhasil di buat", Toast.LENGTH_SHORT).show();
