@@ -293,6 +293,7 @@ public class DateFilter extends AppCompatActivity {
             format.setBorder(Border.RIGHT, BorderLineStyle.DOUBLE);
 
             InputStream raw = this.getAssets().open("logo.png");
+            InputStream rawttd = this.getAssets().open("ttd.png");
 //            Reader is = new BufferedReader(new InputStreamReader(raw, "UTF8"));
 //            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_baseline_add_24);
 //            AssetManager am = getAssets();
@@ -305,8 +306,12 @@ public class DateFilter extends AppCompatActivity {
 //            File logo = new File("file:///android_asset/logo.png");
             File logo = File.createTempFile( "logo", ".png" );
             FileUtils.copyToFile( raw, logo );
-            sheetA.mergeCells(0, 0, 1, 3);
 
+            File ttd = File.createTempFile("ttd", ".png");
+            FileUtils.copyToFile( rawttd, ttd);
+
+
+            sheetA.mergeCells(0, 0, 1, 3);
             sheetA.addCell(new Label(0,0,"", format));
             WritableImage im = new WritableImage(0, 0, 2, 4, logo);
             sheetA.addImage(im);
@@ -337,6 +342,11 @@ public class DateFilter extends AppCompatActivity {
                 sheetA.addCell(new Label(3, i, "PT Medan Sugar Industry"));
                 sheetA.addCell(new Label(3, i+1, "Industry Control"));
                 sheetA.addCell(new Label(3, i+6, "Syahran Aran"));
+
+                sheetA.mergeCells(3, i+2, 3, i+5);
+                sheetA.addCell(new Label(3,i+2,""));
+                WritableImage imttd = new WritableImage(3, i+2, 1, 4, ttd);
+                sheetA.addImage(imttd);
             }
 
             if(mode==2 || mode==3){
@@ -374,6 +384,11 @@ public class DateFilter extends AppCompatActivity {
                 sheetA.addCell(new Label(5, i, "PT Medan Sugar Industry"));
                 sheetA.addCell(new Label(5, i+1, "Industry Control"));
                 sheetA.addCell(new Label(5, i+6, "Syahran Aran"));
+
+                sheetA.mergeCells(5, i+2, 5, i+5);
+                sheetA.addCell(new Label(5,i+2,""));
+                WritableImage imttd = new WritableImage(5, i+2, 1, 4, ttd);
+                sheetA.addImage(imttd);
 
             }
             for (int c=0; c<100; c++){
